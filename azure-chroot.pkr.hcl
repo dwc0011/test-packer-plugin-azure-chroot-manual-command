@@ -26,7 +26,7 @@ variable "spel_root_volume_size" {
 variable "spel_version" {
   description = "Version appended to the name of the built images"
   type        = string
-  default     = "devdc001"
+  default     = "devaz001"
 }
 
 source "azure-chroot" "manual" {  
@@ -38,7 +38,7 @@ source "azure-chroot" "manual" {
   os_disk_size_gb     = var.spel_root_volume_size
 
 
-  image_resource_id   = "/subscriptions/{{vm `subscription_id`}}/resourceGroups/{{vm `resource_group`}}/providers/Microsoft.Compute/images/rhel9‑chroot‑image‑${var.spel_identifier}-${var.spel_version}"
+  image_resource_id   = "/subscriptions/{{vm `subscription_id`}}/resourceGroups/{{vm `resource_group`}}/providers/Microsoft.Compute/images/rhel9-chroot-image-${var.spel_identifier}-${var.spel_version}"
 
 }
 
