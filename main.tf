@@ -148,7 +148,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     dnf install cloud-utils-growpart gdisk
 
     mkdir -p /packerbuild/test-resources
-
+  
 
     echo "#!/bin/bash" > /packerbuild/build_packer.sh
     echo "cd /packerbuild/${var.packer_plugin_name}" >> /packerbuild/build_packer.sh
@@ -157,17 +157,16 @@ resource "azurerm_linux_virtual_machine" "this" {
 
     echo "#!/bin/bash" > /packerbuild/run_packer.sh
     echo "cd /packerbuild" > /packerbuild/run_packer.sh
-    echo "packer init azure-chroot.pkr.hcl" >> /packerbuild/run_packer.sh
+    echo "/usr/local/bin/packer init azure-chroot.pkr.hcl" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG=1" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/run_packer.sh
-    echo "packer build azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
+    echo "/usr/local/bin/packer build azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
     chmod +x /packerbuild/run_packer.sh
 
 
     git clone ${var.test_packer_plugin_git_url} /packerbuild/test-resources
-    cp /packerbuild/test-resources/azure-chroot.pkr.hcl /packerbuild/azure-chroot.pkr.hcl
-    cp /packerbuild/test-resources/scripts/* /packerbuild/scripts/
-    chmod +x /packerbuild/scripts/*.sh  
+    cp /packerbuild/test-resources/azure-chroot.pkr.hcl /packerbuild/azure-chroot.pkr.hcl    
+    chmod +x /packerbuild/test-resources/scripts/*.sh  
 
    
     git clone ${var.packer_plugin_git_url} /packerbuild/${var.packer_plugin_name}
@@ -184,9 +183,9 @@ resource "azurerm_linux_virtual_machine" "this" {
     unzip packer.zip
     mv packer /usr/local/bin/
     chmod +x /usr/local/bin/packer
-
     
     /packerbuild/scripts/resize.sh
+    
   EOF
   )
 
