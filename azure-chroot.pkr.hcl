@@ -34,7 +34,7 @@ source "azure-chroot" "manual" {
   pre_mount_commands = [
     "echo 'Mandatory pre-mount command'",    
   ]
-  manual_mount_command = "chmod +x ./scripts/mount.sh && export SOURCE_NAME_ENV=${source.name} && bash -x ./scripts/mount.sh" 
+  manual_mount_command = "chmod +x ./scripts/mount.sh && export SOURCE_NAME_ENV='${source.name}' && export SPEL_AMIGENBUILDDEV='{{ .Device }}'' && bash -x ./scripts/mount.sh" 
   os_disk_size_gb     = var.spel_root_volume_size
 
 
