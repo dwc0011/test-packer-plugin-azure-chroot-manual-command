@@ -46,6 +46,14 @@ resource "azurerm_storage_blob" "mount" {
   source                 = "${path.module}/scripts/mount.sh"
 }
 
+resource "azurerm_storage_blob" "resize" {
+  name                   = "scripts/resize.sh"
+  storage_account_name   = azurerm_storage_account.this.name
+  storage_container_name = azurerm_storage_container.scripts.name
+  type                   = "Block"
+  source                 = "${path.module}/scripts/resize.sh"
+}
+
 resource "azurerm_user_assigned_identity" "this" {
   name                = "packer-builder-identity${random_string.suffix.id}"
   resource_group_name = azurerm_resource_group.this.name
@@ -190,6 +198,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     az login --identity
     az storage blob download-batch -d /packerbuild/ -s scripts --account-name ${azurerm_storage_account.this.name}
 
+    chmod +x /packerbuild/scripts/*.sh
    
     git clone ${var.packer_plugin_git_url} /packerbuild/${var.packer_plugin_name}
     cd /packerbuild/${var.packer_plugin_name}
@@ -205,6 +214,8 @@ resource "azurerm_linux_virtual_machine" "this" {
     unzip packer.zip
     mv packer /usr/local/bin/
     chmod +x /usr/local/bin/packer
+
+    /packerbuild/scripts/resize.sh
   EOF
   )
 
