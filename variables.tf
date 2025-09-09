@@ -1,13 +1,12 @@
 variable "my_ip" {
   description = "Your public IP address"
-  type        = string
-  default     = "ENTER YOUR IP"
+  type        = string  
 }
 
 variable "ssh_pub_key_path" {
   description = "Path to your SSH public key"
   type        = string
-  default     = "ENTER PATH TO SSH PUB KEY"
+  default     = "~/.ssh/id_rsa.pub"
 }
 
 variable "resource_group" {
@@ -24,7 +23,7 @@ variable "location" {
 
 variable "owner_tag" {
   description = "Owner tag for resources"
-  type        = string
+  type        = string  
 }
 
 variable "vm_size" {
@@ -42,7 +41,7 @@ variable "admin_username" {
 variable "admin_password" {
   description = "Admin password for the virtual machine"
   type        = string
-  sensitive   = true  
+  sensitive   = true    
 }
 
 variable "vnet_cider" {
@@ -66,6 +65,12 @@ variable "packer_version" {
 variable "packer_plugin_name" {
   description = "The name of the Packer plugin directory"
   default     = "packer-plugin-azure"
+  type        = string
+}
+
+variable "test_packer_plugin_git_url" {
+  description = "The Git URL for the test resources to test Packer plugin repository"
+  default     = "https://github.com/dwc0011/test-packer-plugin-azure-chroot-manual-command.git"
   type        = string
 }
 

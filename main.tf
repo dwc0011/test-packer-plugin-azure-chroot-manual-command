@@ -24,36 +24,6 @@ resource "azurerm_storage_account" "this" {
   }
 }
 
-resource "azurerm_storage_container" "scripts" {
-  name                  = "scripts${random_string.suffix.id}"
-  storage_account_id    = azurerm_storage_account.this.id
-  container_access_type = "private"
-}
-
-resource "azurerm_storage_blob" "packer_template" {
-  name                   = "azure-chroot.pkr.hcl"
-  storage_account_name   = azurerm_storage_account.this.name
-  storage_container_name = azurerm_storage_container.scripts.name
-  type                   = "Block"
-  source                 = "${path.module}/azure-chroot.pkr.hcl"
-}
-
-resource "azurerm_storage_blob" "mount" {
-  name                   = "scripts/mount.sh"
-  storage_account_name   = azurerm_storage_account.this.name
-  storage_container_name = azurerm_storage_container.scripts.name
-  type                   = "Block"
-  source                 = "${path.module}/scripts/mount.sh"
-}
-
-resource "azurerm_storage_blob" "resize" {
-  name                   = "scripts/resize.sh"
-  storage_account_name   = azurerm_storage_account.this.name
-  storage_container_name = azurerm_storage_container.scripts.name
-  type                   = "Block"
-  source                 = "${path.module}/scripts/resize.sh"
-}
-
 resource "azurerm_user_assigned_identity" "this" {
   name                = "packer-builder-identity${random_string.suffix.id}"
   resource_group_name = azurerm_resource_group.this.name
@@ -156,8 +126,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   }
 
   identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.this.id]
+    type         = "SystemAssigned"
   }
 
   os_disk {
@@ -178,7 +147,8 @@ resource "azurerm_linux_virtual_machine" "this" {
     dnf install -y dnf-utils wget unzip curl gnupg jq git go-toolset lvm2
     dnf install cloud-utils-growpart gdisk
 
-    mkdir -p /packerbuild
+    mkdir -p /packerbuild/test-resources
+
 
     echo "#!/bin/bash" > /packerbuild/build_packer.sh
     echo "cd /packerbuild/${var.packer_plugin_name}" >> /packerbuild/build_packer.sh
@@ -194,13 +164,11 @@ resource "azurerm_linux_virtual_machine" "this" {
     chmod +x /packerbuild/run_packer.sh
 
 
-    rpm --import https://packages.microsoft.com/keys/microsoft.asc
-    dnf install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm
-    dnf install -y azure-cli
-    az login --identity
-    az storage blob download-batch -d /packerbuild/ -s scripts --account-name ${azurerm_storage_account.this.name}
+    git clone ${var.test_packer_plugin_git_url} /packerbuild/test-resources
+    cp /packerbuild/test-resources/azure-chroot.pkr.hcl /packerbuild/azure-chroot.pkr.hcl
+    cp /packerbuild/test-resources/scripts/* /packerbuild/scripts/
+    chmod +x /packerbuild/scripts/*.sh  
 
-    chmod +x /packerbuild/scripts/*.sh
    
     git clone ${var.packer_plugin_git_url} /packerbuild/${var.packer_plugin_name}
     cd /packerbuild/${var.packer_plugin_name}
@@ -217,6 +185,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     mv packer /usr/local/bin/
     chmod +x /usr/local/bin/packer
 
+    
     /packerbuild/scripts/resize.sh
   EOF
   )
@@ -226,3 +195,4 @@ resource "azurerm_linux_virtual_machine" "this" {
     Owner = var.owner_tag
   }
 }
+
