@@ -32,22 +32,6 @@ resource "azurerm_storage_blob" "mount" {
   source                 = "${path.module}/scripts/mount.sh"
 }
 
-resource "azurerm_storage_blob" "amigen9_build" {
-  name                   = "scripts/amigen9-build.sh"
-  storage_account_name   = azurerm_storage_account.this.name
-  storage_container_name = azurerm_storage_container.scripts.name
-  type                   = "Block"
-  source                 = "${path.module}/scripts/amigen9-build.sh"
-}
-
-resource "azurerm_storage_blob" "builder_prep_9" {
-  name                   = "scripts/builder-prep-9.sh"
-  storage_account_name   = azurerm_storage_account.this.name
-  storage_container_name = azurerm_storage_container.scripts.name
-  type                   = "Block"
-  source                 = "${path.module}/scripts/builder-prep-9.sh"
-}
-
 resource "azurerm_user_assigned_identity" "this" {
   name                = "packer-builder-identity"
   resource_group_name = var.resource_group
@@ -125,10 +109,10 @@ resource "azurerm_linux_virtual_machine" "this" {
 
     echo "#!/bin/bash" > /packerbuild/run_packer.sh
     echo "cd /packerbuild" > /packerbuild/run_packer.sh
-    echo "packer init skip-mount.pkr.hcl" >> /packerbuild/run_packer.sh
+    echo "packer init azure-chroot.pkr.hcl" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG=1" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/run_packer.sh
-    echo "packer build skip-mount.pkr.hcl &" >> /packerbuild/run_packer.sh
+    echo "packer build azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
     chmod +x /packerbuild/run_packer.sh
 
     pip3 install azure-cli
