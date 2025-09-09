@@ -175,7 +175,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   custom_data = base64encode(<<-EOF
     #!/bin/bash
     dnf update -y
-    dnf install -y dnf-utils wget unzip curl jq git python3 python3-pip go-toolset lvm2
+    dnf install -y dnf-utils wget unzip curl jq git go-toolset lvm2
     dnf install cloud-utils-growpart gdisk
 
     mkdir -p /packerbuild
@@ -193,8 +193,10 @@ resource "azurerm_linux_virtual_machine" "this" {
     echo "packer build azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
     chmod +x /packerbuild/run_packer.sh
 
-    pip3 install azure-cli
 
+    rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    dnf install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm
+    dnf install azure-cli
     az login --identity
     az storage blob download-batch -d /packerbuild/ -s scripts --account-name ${azurerm_storage_account.this.name}
 
