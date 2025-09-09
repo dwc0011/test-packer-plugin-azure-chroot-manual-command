@@ -1,18 +1,32 @@
+resource "random_pet" "this" {
+  prefix = var.resource_group
+}
+
+resource "random_string" "suffix" {
+  length    = 2
+  special   = false
+  min_lower = 2
+}
+
+resource "azurerm_resource_group" "this" {
+  name     = random_pet.this.id
+  location = var.location
+}
+
 resource "azurerm_storage_account" "this" {
-  name                     = "rhel9packerstorage"
-  resource_group_name      = var.resource_group
+  name                     = "rhel9packerstorage${random_string.suffix.id}"
+  resource_group_name      = azurerm_resource_group.this.name
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
   tags = {
-    Name  = "rhel9-with-packer-chroot-builder"
     Owner = var.owner_tag
   }
 }
 
 resource "azurerm_storage_container" "scripts" {
-  name                  = "scripts"
-  storage_account_id  = azurerm_storage_account.this.id
+  name                  = "scripts${random_string.suffix.id}"
+  storage_account_id    = azurerm_storage_account.this.id
   container_access_type = "private"
 }
 
@@ -33,50 +47,105 @@ resource "azurerm_storage_blob" "mount" {
 }
 
 resource "azurerm_user_assigned_identity" "this" {
-  name                = "packer-builder-identity"
-  resource_group_name = var.resource_group
+  name                = "packer-builder-identity${random_string.suffix.id}"
+  resource_group_name = azurerm_resource_group.this.name
   location            = var.location
 
   tags = {
-    Name  = "packer-builder"
     Owner = var.owner_tag
   }
 }
 
-resource "azurerm_network_security_group" "vm_nsg" {
-  name                = "rhel9-builder-nsg"
+resource "azurerm_virtual_network" "this" {
+  name                = "rhel9-builder-vent-${random_string.suffix.id}"
+  address_space       = [var.vnet_cider]
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_subnet" "this" {
+  name                 = "rhel9-builder-subnet-${random_string.suffix.id}"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = [var.subnet_cidr_prefix]
+}
+
+# Create a public IP address
+resource "azurerm_public_ip" "this" {
+  name                = "rhel-builder-pip-ssh-${random_string.suffix.id}"
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  allocation_method   = "Static"
+}
+
+resource "azurerm_network_security_group" "this" {
+  name                = "rhel9-builder-nsg-${random_string.suffix.id}"
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_network_security_rule" "ob" {
+  name                        = "rhel9-builder-sg-rule-ob-${random_string.suffix.id}"
+  priority                    = 100
+  direction                   = "Outbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "Internet"
+  network_security_group_name = azurerm_network_security_group.this.name
+  resource_group_name         = azurerm_resource_group.this.name
+}
+
+resource "azurerm_network_security_rule" "ssh" {
+  name                        = "rhel9-builder-sg-rule-ssh-${random_string.suffix.id}"
+  priority                    = 1001
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "22"
+  source_address_prefix       = var.my_ip
+  destination_address_prefix  = "*"
+  network_security_group_name = azurerm_network_security_group.this.name
+  resource_group_name         = azurerm_resource_group.this.name
+}
+
+resource "azurerm_network_interface" "this" {
+  name                = "rhel9-builder-nic-${random_string.suffix.id}"
   location            = var.location
-  resource_group_name = var.resource_group
+  resource_group_name = azurerm_resource_group.this.name
 
-  security_rule {
-    name                       = "AllowInternetOut"
-    priority                   = 100
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "Internet"
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.this.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.this.id
   }
+}
 
-  tags = {
-    Name  = "rhel9-builder-nsg"
-    Owner = var.owner_tag
-  }
+resource "azurerm_network_interface_security_group_association" "this" {
+  network_interface_id      = azurerm_network_interface.this.id
+  network_security_group_id = azurerm_network_security_group.this.id
 }
 
 resource "azurerm_linux_virtual_machine" "this" {
-  name                = "rhel9-builder"
+  name                = "rhel9-with-packer-chroot-builder-${random_string.suffix.id}"
   location            = var.location
-  resource_group_name = var.resource_group
+  resource_group_name = azurerm_resource_group.this.name
   network_interface_ids = [
     azurerm_network_interface.this.id,
   ]
-  size               = var.vm_size
-  admin_username     = var.admin_username
-  admin_password     = var.admin_password
+  size                            = var.vm_size
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
   disable_password_authentication = false
+
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = file(var.ssh_pub_key_path)
+  }
 
   identity {
     type         = "UserAssigned"
@@ -91,7 +160,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   source_image_reference {
     publisher = "RedHat"
     offer     = "RHEL"
-    sku       = "9_1"
+    sku       = "9-lvm-gen2"
     version   = "latest"
   }
 
@@ -99,6 +168,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     #!/bin/bash
     dnf update -y
     dnf install -y dnf-utils wget unzip curl jq git python3 python3-pip go-toolset lvm2
+    dnf install cloud-utils-growpart gdisk
 
     mkdir -p /packerbuild
 
@@ -139,19 +209,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   )
 
   tags = {
-    Name  = "rhel9-with-packer-chroot-builder"
+    Name  = "rhel9-with-packer-chroot-builder-${random_string.suffix.id}"
     Owner = var.owner_tag
-  }
-}
-
-resource "azurerm_network_interface" "this" {
-  name                = "rhel9-builder-nic"
-  location            = var.location
-  resource_group_name = var.resource_group
-
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = var.subnet_id
-    private_ip_address_allocation = "Dynamic"
   }
 }
