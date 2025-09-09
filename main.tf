@@ -175,7 +175,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   custom_data = base64encode(<<-EOF
     #!/bin/bash
     dnf update -y
-    dnf install -y dnf-utils wget unzip curl jq git go-toolset lvm2
+    dnf install -y dnf-utils wget unzip curl gnupg jq git go-toolset lvm2
     dnf install cloud-utils-growpart gdisk
 
     mkdir -p /packerbuild
@@ -196,7 +196,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 
     rpm --import https://packages.microsoft.com/keys/microsoft.asc
     dnf install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm
-    dnf install azure-cli
+    dnf install -y azure-cli
     az login --identity
     az storage blob download-batch -d /packerbuild/ -s scripts --account-name ${azurerm_storage_account.this.name}
 
