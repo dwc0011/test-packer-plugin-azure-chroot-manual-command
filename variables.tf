@@ -1,6 +1,19 @@
+variable "my_ip" {
+  description = "Your public IP address"
+  type        = string
+  default     = "ENTER YOUR IP"
+}
+
+variable "ssh_pub_key_path" {
+  description = "Path to your SSH public key"
+  type        = string
+  default     = "ENTER PATH TO SSH PUB KEY"
+}
+
 variable "resource_group" {
   description = "The name of the Azure Resource Group"
   type        = string
+  default     = "packer-plugin-test-rg"
 }
 
 variable "location" {
@@ -23,28 +36,30 @@ variable "vm_size" {
 variable "admin_username" {
   description = "Admin username for the virtual machine"
   type        = string
+  default     = "packeruser"
 }
 
 variable "admin_password" {
   description = "Admin password for the virtual machine"
   type        = string
-  sensitive   = true
+  sensitive   = true  
 }
 
-variable "subnet_id" {
-  description = "The ID of the subnet where the VM will be placed"
+variable "vnet_cider" {
+  description = "The CIDR block for the virtual network"
   type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "subnet_cidr_prefix" {
+  description = "The CIDR prefix for the subnet"
+  type        = string
+  default     = "10.0.1.0/24"
 }
 
 variable "packer_version" {
   description = "The version of Packer to use"
   default     = "1.14.1"
-  type        = string
-}
-
-variable "owner_tag" {
-  description = "Owner tag for the resources"
-  default     = "dennis.carey@plus3it.com"
   type        = string
 }
 
