@@ -184,8 +184,8 @@ resource "azurerm_linux_virtual_machine" "this" {
     mv packer /usr/local/bin/
     chmod +x /usr/local/bin/packer
     
-    /packerbuild/scripts/resize.sh
-    
+    /packerbuild/test-resources/scripts/resize.sh
+
   EOF
   )
 
@@ -194,4 +194,16 @@ resource "azurerm_linux_virtual_machine" "this" {
     Owner = var.owner_tag
   }
 }
+
+
+
+
+# Shared Image Gallery
+resource "azurerm_shared_image_gallery" "this" {
+  name                = var.gallery_name
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+  description         = "Private gallery for RHEL9 custom chroot scratch images"
+}
+
 
