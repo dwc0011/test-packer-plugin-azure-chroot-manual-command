@@ -10,12 +10,11 @@ packer {
 
 locals {
   # Pull subscription ID from IMDS
-  subscription_id = trimspace(chomp(shell("curl -s -H Metadata:true \"http://169.254.169.254/metadata/instance?api-version=2021-02-01\" | jq -r .compute.subscriptionId")))
-
+  subscription_id = var.subscription_id
   # Pull resource group from IMDS
-  resource_group  = trimspace(chomp(shell("curl -s -H Metadata:true \"http://169.254.169.254/metadata/instance?api-version=2021-02-01\" | jq -r .compute.resourceGroupName")))
+  resource_group  = var.resource_group
 
-   location       = trimspace(chomp(shell("curl -s -H Metadata:true \"http://169.254.169.254/metadata/instance?api-version=2021-02-01\" | jq -r .compute.location")))
+   location       = var.location
 }
 
 
@@ -51,7 +50,24 @@ variable "image_definition_name" {
   default = "rhel9-lvm-chroot-builder-from-scratch"
 }
 
-variable "image_version"   { type = string default = "1.0.0" }
+variable "image_version" { 
+  type = string 
+  default = "1.0.0" 
+}
+
+variable "subscription_id" { 
+  type = string  
+}
+
+variable "resource_group" {
+  description = "The name of the Azure Resource Group"
+  type        = string  
+}
+variable "location" {
+  description = "Azure region to deploy resources"
+  type        = string
+  default     = "eastus"
+}
 
 source "azure-chroot" "manual" {  
   from_scratch = true
