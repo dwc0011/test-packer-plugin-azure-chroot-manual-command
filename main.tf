@@ -1,3 +1,6 @@
+data "azurerm_subscription" "current" {
+}
+
 resource "random_pet" "this" {
   prefix = var.resource_group
 }
@@ -15,7 +18,7 @@ resource "azurerm_resource_group" "this" {
 
 resource "azurerm_storage_account" "this" {
   name                     = "rhel9packerstorage${random_string.suffix.id}"
-  resource_group_name      = azurerm_resource_group.this.name
+  resource_group_name      = local.resource_group
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
@@ -24,9 +27,13 @@ resource "azurerm_storage_account" "this" {
   }
 }
 
+locals{
+  resource_group = local.resource_group
+}
+
 resource "azurerm_user_assigned_identity" "this" {
   name                = "packer-builder-identity${random_string.suffix.id}"
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group
   location            = var.location
 
   tags = {
@@ -38,12 +45,12 @@ resource "azurerm_virtual_network" "this" {
   name                = "rhel9-builder-vent-${random_string.suffix.id}"
   address_space       = [var.vnet_cider]
   location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group
 }
 
 resource "azurerm_subnet" "this" {
   name                 = "rhel9-builder-subnet-${random_string.suffix.id}"
-  resource_group_name  = azurerm_resource_group.this.name
+  resource_group_name  = local.resource_group
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [var.subnet_cidr_prefix]
 }
@@ -52,14 +59,14 @@ resource "azurerm_subnet" "this" {
 resource "azurerm_public_ip" "this" {
   name                = "rhel-builder-pip-ssh-${random_string.suffix.id}"
   location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group
   allocation_method   = "Static"
 }
 
 resource "azurerm_network_security_group" "this" {
   name                = "rhel9-builder-nsg-${random_string.suffix.id}"
   location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group
 }
 
 resource "azurerm_network_security_rule" "ob" {
@@ -73,7 +80,7 @@ resource "azurerm_network_security_rule" "ob" {
   source_address_prefix       = "*"
   destination_address_prefix  = "Internet"
   network_security_group_name = azurerm_network_security_group.this.name
-  resource_group_name         = azurerm_resource_group.this.name
+  resource_group_name         = local.resource_group
 }
 
 resource "azurerm_network_security_rule" "ssh" {
@@ -87,13 +94,13 @@ resource "azurerm_network_security_rule" "ssh" {
   source_address_prefix       = var.my_ip
   destination_address_prefix  = "*"
   network_security_group_name = azurerm_network_security_group.this.name
-  resource_group_name         = azurerm_resource_group.this.name
+  resource_group_name         = local.resource_group
 }
 
 resource "azurerm_network_interface" "this" {
   name                = "rhel9-builder-nic-${random_string.suffix.id}"
   location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group
 
   ip_configuration {
     name                          = "internal"
@@ -111,7 +118,7 @@ resource "azurerm_network_interface_security_group_association" "this" {
 resource "azurerm_linux_virtual_machine" "this" {
   name                = "rhel9-with-packer-chroot-builder-${random_string.suffix.id}"
   location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group
   network_interface_ids = [
     azurerm_network_interface.this.id,
   ]
@@ -160,9 +167,16 @@ resource "azurerm_linux_virtual_machine" "this" {
     echo "/usr/local/bin/packer init azure-chroot.pkr.hcl" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG=1" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/run_packer.sh
-    echo "/usr/local/bin/packer build azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
+    echo "/usr/local/bin/packer build --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
     chmod +x /packerbuild/run_packer.sh
 
+    echo "#!/bin/bash" > /packerbuild/validate_packer.sh
+    echo "export PACKER_LOG=1" >> /packerbuild/validate_packer.sh
+    echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/validate_packer.sh
+    echo "cd /packerbuild" > /packerbuild/validate_packer.sh
+    echo "/usr/local/bin/packer init azure-chroot.pkr.hcl" >> /packerbuild/validate_packer.sh
+    echo "/usr/local/bin/packer validate --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl &" >> /packerbuild/validate_packer.sh
+    chmod +x /packerbuild/validate_packer.sh
 
     git clone ${var.test_packer_plugin_git_url} /packerbuild/test-resources
     cp /packerbuild/test-resources/azure-chroot.pkr.hcl /packerbuild/azure-chroot.pkr.hcl    
@@ -201,7 +215,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 # Shared Image Gallery
 resource "azurerm_shared_image_gallery" "this" {
   name                = var.gallery_name
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group
   location            = var.location
   description         = "Private gallery for RHEL9 custom chroot scratch images"
 }
