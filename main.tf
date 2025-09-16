@@ -159,6 +159,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 
     echo "#!/bin/bash" > /packerbuild/build_packer.sh
     echo "cd /packerbuild/${var.packer_plugin_name}" >> /packerbuild/build_packer.sh
+    echo "export PATH=/usr/local/bin/:$PATH" >> /packerbuild/build_packer.sh
     echo "make dev" >> /packerbuild/build_packer.sh
     chmod +x /packerbuild/build_packer.sh
 
@@ -167,15 +168,17 @@ resource "azurerm_linux_virtual_machine" "this" {
     echo "/usr/local/bin/packer init azure-chroot.pkr.hcl" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG=1" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/run_packer.sh
-    echo "/usr/local/bin/packer build --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
+    echo "export PATH=/usr/local/bin/:$PATH" >> /packerbuild/run_packer.sh
+    echo "packer build --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
     chmod +x /packerbuild/run_packer.sh
 
     echo "#!/bin/bash" > /packerbuild/validate_packer.sh
     echo "export PACKER_LOG=1" >> /packerbuild/validate_packer.sh
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/validate_packer.sh
+    echo "export PATH=/usr/local/bin/:$PATH" >> /packerbuild/validate_packer.sh
     echo "cd /packerbuild" > /packerbuild/validate_packer.sh
-    echo "/usr/local/bin/packer init azure-chroot.pkr.hcl" >> /packerbuild/validate_packer.sh
-    echo "/usr/local/bin/packer validate --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl &" >> /packerbuild/validate_packer.sh
+    echo "packer init azure-chroot.pkr.hcl" >> /packerbuild/validate_packer.sh
+    echo "packer validate --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl" >> /packerbuild/validate_packer.sh
     chmod +x /packerbuild/validate_packer.sh
 
     git clone ${var.test_packer_plugin_git_url} /packerbuild/test-resources
@@ -200,6 +203,9 @@ resource "azurerm_linux_virtual_machine" "this" {
     
     /packerbuild/test-resources/scripts/resize.sh
 
+    rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    dnf install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm
+    dnf install azure-cli
   EOF
   )
 
