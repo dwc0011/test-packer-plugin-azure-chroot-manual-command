@@ -209,15 +209,3 @@ resource "azurerm_linux_virtual_machine" "this" {
   }
 }
 
-
-
-
-# Shared Image Gallery
-resource "azurerm_shared_image_gallery" "this" {
-  name                = var.gallery_name
-  resource_group_name = local.resource_group
-  location            = var.location
-  description         = "Private gallery for RHEL9 custom chroot scratch images"
-}
-
-
