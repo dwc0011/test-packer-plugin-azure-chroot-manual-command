@@ -28,7 +28,7 @@ resource "azurerm_storage_account" "this" {
 }
 
 locals{
-  resource_group = local.resource_group
+  resource_group = azurerm_resource_group.this.name
 }
 
 resource "azurerm_user_assigned_identity" "this" {
