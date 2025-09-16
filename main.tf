@@ -164,7 +164,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     chmod +x /packerbuild/build_packer.sh
 
     echo "#!/bin/bash" > /packerbuild/run_packer.sh
-    echo "cd /packerbuild" > /packerbuild/run_packer.sh    
+    echo "cd /packerbuild" >> /packerbuild/run_packer.sh    
     echo "export PACKER_LOG=1" >> /packerbuild/run_packer.sh
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/run_packer.sh
     echo "export PATH=/usr/local/bin/:$PATH" >> /packerbuild/run_packer.sh
@@ -173,10 +173,10 @@ resource "azurerm_linux_virtual_machine" "this" {
     chmod +x /packerbuild/run_packer.sh
 
     echo "#!/bin/bash" > /packerbuild/validate_packer.sh
+    echo "cd /packerbuild" >> /packerbuild/validate_packer.sh
     echo "export PACKER_LOG=1" >> /packerbuild/validate_packer.sh
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/validate_packer.sh
     echo "export PATH=/usr/local/bin/:$PATH" >> /packerbuild/validate_packer.sh
-    echo "cd /packerbuild" > /packerbuild/validate_packer.sh
     echo "packer init azure-chroot.pkr.hcl" >> /packerbuild/validate_packer.sh
     echo "packer validate --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl" >> /packerbuild/validate_packer.sh
     chmod +x /packerbuild/validate_packer.sh
