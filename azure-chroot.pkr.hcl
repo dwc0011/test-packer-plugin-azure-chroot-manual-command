@@ -75,21 +75,21 @@ variable "location" {
 }
 
 source "azure-chroot" "manual" {  
+   use_azure_cli_auth = true
   from_scratch = true
   
   pre_mount_commands = [
     "echo 'Mandatory pre-mount command'",    
   ]
-  manual_mount_command = "chmod +x /packerbuild/test-resources/scripts/mount.sh && export SOURCE_NAME_ENV='${source.name}' && export SPEL_AMIGENBUILDDEV='{{ .Device }}'' && bash -x /packerbuild/test-resources/scripts/mount.sh" 
+  manual_mount_command = "chmod +x /packerbuild/test-resources/scripts/mount.sh && export SOURCE_NAME_ENV='${source.name}' && export SPEL_AMIGENBUILDDEV='{{ .Device }}' && bash -x /packerbuild/test-resources/scripts/mount.sh" 
   os_disk_size_gb     = var.spel_root_volume_size
 
-  os_type          = var.image_os_type
-  image_publisher  = var.image_publisher
-  image_offer      = var.image_offer
-  image_sku        = var.image_sku
-  
+  image_resource_id = "/subscriptions/${local.subscription_id}/resourceGroups/${local.resource_group}/providers/Microsoft.Compute/images/${var.image_publisher}-${var.image_sku}-{{timestamp}}"
+
+  image_publisher = var.image_publisher
 }
 
 build {
+ 
   sources = ["source.azure-chroot.manual"]
 }
