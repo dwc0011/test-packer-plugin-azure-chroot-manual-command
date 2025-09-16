@@ -85,8 +85,6 @@ source "azure-chroot" "manual" {
   os_disk_size_gb     = var.spel_root_volume_size
 
   image_resource_id = "/subscriptions/${local.subscription_id}/resourceGroups/${local.resource_group}/providers/Microsoft.Compute/images/${var.image_publisher}-${var.image_sku}-{{timestamp}}"
-
-  image_publisher = var.image_publisher
 }
 
 build {
