@@ -14,7 +14,7 @@ locals {
   # Pull resource group from IMDS
   resource_group  = var.resource_group
 
-   location       = var.location
+  location       = var.location
 }
 
 
@@ -40,19 +40,24 @@ variable "spel_version" {
   default     = "devaz001"
 }
 
-variable "gallery_name" {
-  type    = string
-  default = "devaz001_rhel9_gallery"
+variable "image_publisher" {
+  type = string
+  default = "SPEL-Custom"
 }
 
-variable "image_definition_name" {
-  type    = string
-  default = "rhel9-lvm-chroot-builder-from-scratch"
+variable "image_os_type" {
+  type = string
+  default = "Linux"
 }
 
-variable "image_version" { 
+variable "image_offer" {
+  type    = string
+  default = "RHELcustom"
+}
+
+variable "image_sku" { 
   type = string 
-  default = "1.0.0" 
+  default = "9-lvm-gen2-chroot" 
 }
 
 variable "subscription_id" { 
@@ -71,23 +76,17 @@ variable "location" {
 
 source "azure-chroot" "manual" {  
   from_scratch = true
-  subscription_id     = local.subscription_id
-  resource_group_name = local.resource_group
-  location            = local.location
+  
   pre_mount_commands = [
     "echo 'Mandatory pre-mount command'",    
   ]
   manual_mount_command = "chmod +x /packerbuild/test-resources/scripts/mount.sh && export SOURCE_NAME_ENV='${source.name}' && export SPEL_AMIGENBUILDDEV='{{ .Device }}'' && bash -x /packerbuild/test-resources/scripts/mount.sh" 
   os_disk_size_gb     = var.spel_root_volume_size
 
-   shared_image_destination {
-    subscription   = local.subscription_id
-    resource_group = local.resource_group
-    gallery_name   = var.gallery_name
-    image_name     = var.image_definition_name
-    image_version  = var.image_version
-  }
-
+  os_type          = var.image_os_type
+  image_publisher  = var.image_publisher
+  image_offer      = var.image_offer
+  image_sku        = var.image_sku
   
 }
 
