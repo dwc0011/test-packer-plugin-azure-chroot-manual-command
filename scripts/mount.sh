@@ -22,7 +22,6 @@ export SPEL_EXTRARPMS="crypto-policies-scripts,spel-release,spel-dod-certs,spel-
 export SPEL_FIPSDISABLE="false"
 export SPEL_GRUBTMOUT="1"
 export SPEL_HTTP_PROXY=""
-export SPEL_USEDEFAULTREPOS="true"
 
 
 export SPEL_AMIGENBOOTDEVLBL="boot_disk"
