@@ -16,17 +16,6 @@ resource "azurerm_resource_group" "this" {
   location = var.location
 }
 
-resource "azurerm_storage_account" "this" {
-  name                     = "rhel9packerstorage${random_string.suffix.id}"
-  resource_group_name      = local.resource_group
-  location                 = var.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  tags = {
-    Owner = var.owner_tag
-  }
-}
-
 locals{
   resource_group = azurerm_resource_group.this.name
 }
