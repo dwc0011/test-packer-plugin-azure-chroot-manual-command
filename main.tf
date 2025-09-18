@@ -146,9 +146,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     dnf install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm
     dnf install -y azure-cli
 
-
     mkdir -p /packerbuild/test-resources
-  
 
     echo "#!/bin/bash" > /packerbuild/build_packer.sh
     echo "cd /packerbuild/${var.packer_plugin_name}" >> /packerbuild/build_packer.sh
@@ -185,6 +183,8 @@ resource "azurerm_linux_virtual_machine" "this" {
 
     # Get the spel scripts and put in the proper location for packer 
     git clone ${var.spel_git_url} /packerbuild/spel
+    cd /packerbuild/spel
+    git checkout ${var.spel_git_branch}
     chmod +x /packerbuild/spel/spel/scripts/*.sh
 
 
