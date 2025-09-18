@@ -53,9 +53,9 @@ resize_if_needed() {
 
 ### MAIN ###
 
-echo "🔎 Running pvscan to ensure updated PV info..."
+echo "Running pvscan to ensure updated PV info..."
 pvscan >/dev/null
-echo "🔄 Running pvresize to refresh physical volumes..."
+echo "Running pvresize to refresh physical volumes..."
 for pv in $(pvs --noheadings -o pv_name); do
     pvresize "$pv" || true
 done
@@ -82,5 +82,5 @@ else
     echo "No free space left for /tmp."
 fi
 
-echo "✅ Resize complete."
+echo "Resize complete."
 lsblk
