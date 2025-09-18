@@ -41,7 +41,7 @@ variable "admin_username" {
 variable "admin_password" {
   description = "Admin password for the virtual machine"
   type        = string
-  sensitive   = true    
+  sensitive   = true   
 }
 
 variable "vnet_cider" {
@@ -89,7 +89,12 @@ variable "packer_plugin_git_branch" {
 
 variable "spel_git_url" {
   description = "The Git URL for the spel repository"
-  default     = "https://github.com/plus3it/spel.git"
+  default     = "https://github.com/dwc0011/spel.git"
   type        = string
 }
 
+variable "spel_git_branch" {
+  description = "The Git branch for the SPEL Repo"
+  default     = "add-support-for-mapper-root-dev"
+  type        = string
+}
