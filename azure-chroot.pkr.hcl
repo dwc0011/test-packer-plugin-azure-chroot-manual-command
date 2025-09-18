@@ -7,7 +7,6 @@ packer {
   }
 }
 
-
 locals {
   # Pull subscription ID from IMDS
   subscription_id = var.subscription_id
@@ -17,11 +16,9 @@ locals {
   location       = var.location
 }
 
-
 ###
 # Variables specific to spel
 ###
-
 variable "spel_identifier" {
   description = "Namespace that prefixes the name of the built images"
   type        = string
@@ -75,7 +72,7 @@ variable "location" {
 }
 
 source "azure-chroot" "manual" {  
-   use_azure_cli_auth = true
+  use_azure_cli_auth = true
   from_scratch = true
   
   pre_mount_commands = [
