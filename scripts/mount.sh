@@ -4,6 +4,8 @@ set -euxo pipefail
 export DNF_VAR_ocidomain="oracle.com"
 export DNF_VAR_ociregion=""
 
+setenforce 0
+yum -y update
 
 export SPEL_AMIGENBRANCH="main"
 export SPEL_AMIGENPKGGRP="core"
@@ -37,3 +39,4 @@ export SPEL_USEROOTDEVICE="false"
 /packerbuild/spel/spel/scripts/builder-prep-9.sh
 
 /packerbuild/spel/spel/scripts/amigen9-build.sh
+
