@@ -7,7 +7,7 @@ export DNF_VAR_ociregion=""
 
 export SPEL_AMIGENBRANCH="main"
 export SPEL_AMIGENPKGGRP="core"
-export SPEL_AMIGENREPOS="spel,rhel-9-for-x86_64-appstream-rhui-rpms,rhel-9-for-x86_64-baseos-rhui-rpms,rhel-9-for-x86_64-supplementary-rhui-rpms,rhui-microsoft-azure-rhel9"
+export SPEL_AMIGENREPOS="spel,packages-microsoft-com-prod,rhel-9-for-x86_64-appstream-rhui-rpms,rhel-9-for-x86_64-baseos-rhui-rpms,rhel-9-for-x86_64-supplementary-rhui-rpms,rhui-microsoft-azure-rhel9"
 export SPEL_USEDEFAULTREPOS="false"
 export SPEL_AMIGENREPOSRC="https://spel-packages.cloudarmor.io/spel-packages/repo/spel-release-latest-9.noarch.rpm"
 export SPEL_AMIGEN9SOURCE="https://github.com/plus3it/AMIgen9.git"
