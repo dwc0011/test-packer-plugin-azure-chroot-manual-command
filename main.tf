@@ -132,11 +132,11 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   source_image_reference {
     publisher = "RedHat"
-    offer     = "RHEL"
-    sku       = "9-lvm-gen2"
+    offer     = "rhel-raw"
+    sku       = "9-raw"
     version   = "latest"
   }
-
+  
   custom_data = base64encode(<<-EOF
     #!/bin/bash
     dnf update -y
@@ -160,7 +160,7 @@ resource "azurerm_linux_virtual_machine" "this" {
     echo "export PACKER_LOG_PATH=/packerbuild/packer.log" >> /packerbuild/run_packer.sh
     echo 'export PATH=/usr/local/bin/:$PATH' >> /packerbuild/run_packer.sh
     echo "packer init azure-chroot.pkr.hcl" >> /packerbuild/run_packer.sh
-    echo "packer build --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
+    echo "packer build -on-error=abort --var subscription_id=${data.azurerm_subscription.current.subscription_id} --var resource_group=${local.resource_group} --var location=${var.location} azure-chroot.pkr.hcl &" >> /packerbuild/run_packer.sh
     chmod +x /packerbuild/run_packer.sh
 
     echo "#!/bin/bash" > /packerbuild/validate_packer.sh
@@ -194,8 +194,6 @@ resource "azurerm_linux_virtual_machine" "this" {
     mv packer /usr/local/bin/
     chmod +x /usr/local/bin/packer
     
-    /packerbuild/test-resources/scripts/resize.sh
-
   EOF
   )
 
