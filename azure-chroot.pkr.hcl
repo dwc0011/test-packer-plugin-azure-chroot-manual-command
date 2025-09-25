@@ -14,6 +14,8 @@ locals {
   resource_group  = var.resource_group
 
   location       = var.location
+
+  image_sku = var.hyperv_generation == "V1" ? var.image_sku : "${var.image_sku}-gen2" 
 }
 
 ###
@@ -87,7 +89,7 @@ source "azure-chroot" "manual" {
   manual_mount_command = "chmod +x /packerbuild/test-resources/scripts/mount.sh && export SOURCE_NAME_ENV='${source.name}' && export SPEL_AMIGENBUILDDEV='{{ .Device }}' && bash -x /packerbuild/test-resources/scripts/mount.sh" 
   os_disk_size_gb     = var.spel_root_volume_size
 
-  image_resource_id = "/subscriptions/${local.subscription_id}/resourceGroups/${local.resource_group}/providers/Microsoft.Compute/images/${var.image_publisher}-${var.image_sku}-{{timestamp}}"
+  image_resource_id = "/subscriptions/${local.subscription_id}/resourceGroups/${local.resource_group}/providers/Microsoft.Compute/images/${var.image_publisher}-${local.image_sku}-{{timestamp}}"
 
   image_hyperv_generation = var.hyperv_generation
 }
