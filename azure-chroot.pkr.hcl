@@ -71,6 +71,12 @@ variable "location" {
   default     = "eastus"
 }
 
+variable "hyperv_generation" {
+  description = "The generation V1 or V2 of hyperv - based on OS and drive type ie V2 nvme"
+  type = string
+  default = "V1"
+}
+
 source "azure-chroot" "manual" {  
   use_azure_cli_auth = true
   from_scratch = true
@@ -82,6 +88,8 @@ source "azure-chroot" "manual" {
   os_disk_size_gb     = var.spel_root_volume_size
 
   image_resource_id = "/subscriptions/${local.subscription_id}/resourceGroups/${local.resource_group}/providers/Microsoft.Compute/images/${var.image_publisher}-${var.image_sku}-{{timestamp}}"
+
+  image_hyperv_generation = var.hyperv_generation
 }
 
 build {
