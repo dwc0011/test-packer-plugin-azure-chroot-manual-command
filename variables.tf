@@ -1,6 +1,6 @@
 variable "my_ip" {
   description = "Your public IP address"
-  type        = string  
+  type        = string
 }
 
 variable "ssh_pub_key_path" {
@@ -23,13 +23,25 @@ variable "location" {
 
 variable "owner_tag" {
   description = "Owner tag for resources"
-  type        = string  
+  type        = string
 }
 
 variable "vm_size" {
   description = "The size of the virtual machine"
   type        = string
-  default     = "Standard_DS1_v2"
+  default     = "Standard_D2s_v4"
+}
+
+variable "image_sku" {
+  description = "SKU for the image"
+  type        = string
+  default     = "9-raw"
+}
+
+variable "hyperv_generation" {
+  description = "The hyperv generation version V1 or V2 must match OS gen"
+  type        = string
+  default     = "V1"
 }
 
 variable "admin_username" {
@@ -41,7 +53,7 @@ variable "admin_username" {
 variable "admin_password" {
   description = "Admin password for the virtual machine"
   type        = string
-  sensitive   = true   
+  sensitive   = true
 }
 
 variable "vnet_cider" {
@@ -89,12 +101,18 @@ variable "packer_plugin_git_branch" {
 
 variable "spel_git_url" {
   description = "The Git URL for the spel repository"
-  default     = "https://github.com/dwc0011/spel.git"
+  default     = "https://github.com/plus3it/spel.git"
   type        = string
 }
 
 variable "spel_git_branch" {
   description = "The Git branch for the SPEL Repo"
-  default     = "add-support-for-mapper-root-dev"
+  default     = "master"
+  type        = string
+}
+
+variable "packer_on_error" {
+  description = "What to do when packer encounters an error (cleanup (default), abort, ask, run-cleanup-provisioner)"
+  default     = "cleanup"
   type        = string
 }
