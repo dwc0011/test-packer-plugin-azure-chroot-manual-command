@@ -116,3 +116,8 @@ variable "packer_on_error" {
   default     = "cleanup"
   type        = string
 }
+
+variable "azure_subscription_id" {
+  description = "Azure subscription id"
+  type = string
+}

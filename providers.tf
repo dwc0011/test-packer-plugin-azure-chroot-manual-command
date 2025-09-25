@@ -13,5 +13,5 @@ terraform {
 
 provider "azurerm" {
   features {}  
-  subscription_id = "ADD YOUR ID HERE"
+  subscription_id = var.azure_subscription_id
 }
