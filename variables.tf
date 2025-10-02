@@ -95,7 +95,7 @@ variable "packer_plugin_git_url" {
 
 variable "packer_plugin_git_branch" {
   description = "The Git branch for the Packer plugin repository"
-  default     = "add-skip-mount-device-chroot-option"
+  default     = "add-manual-mount-command-option"
   type        = string
 }
 
