@@ -70,7 +70,7 @@ variable "subnet_cidr_prefix" {
 
 variable "packer_version" {
   description = "The version of Packer to use"
-  default     = "1.14.1"
+  default     = "1.14.2"
   type        = string
 }
 
