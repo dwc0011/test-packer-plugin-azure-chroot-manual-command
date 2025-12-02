@@ -56,7 +56,7 @@ variable "image_offer" {
 
 variable "image_sku" { 
   type = string 
-  default = "9-lvm-gen2-chroot" 
+  default = "9-lvm-gen1-chroot" 
 }
 
 variable "subscription_id" { 
